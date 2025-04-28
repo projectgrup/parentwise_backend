@@ -1,0 +1,13 @@
+
+fastapi
+uvicorn
+firebase-admin
+sentence-transformers
+faiss-cpu
+redis
+deep-translator
+langdetect
+transformers
+datasets
+pyngrok
+nest_asyncio
