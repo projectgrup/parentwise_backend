@@ -1,18 +1,21 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-# 🔐 Import Firebase initialization
-from app.config.firebase_config import initialize_firebase
+# ✅ Firebase initialization
+import firebase_admin
+from firebase_admin import credentials
 
-initialize_firebase()
+# Load Firebase admin SDK key
+cred = credentials.Certificate("app/firebase-adminsdk.json")
+firebase_admin.initialize_app(cred)
 
 # 🧠 Create the FastAPI app
 app = FastAPI()
 
-# 🌐 Enable CORS
+# 🌐 Enable CORS (allow frontend to call API)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # You can replace * with your Streamlit domain if needed
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"]
@@ -31,4 +34,3 @@ app.include_router(story.router, prefix="/story")
 @app.get("/")
 def root():
     return {"message": "Welcome to ParentWise AI!"}
-
