@@ -1,7 +1,15 @@
 from fastapi import APIRouter, Form
-from app.utils.translator import translate_text
 
-# Optional import (only if Redis + RAG are working)
+# ✅ Import translation (must be implemented in app/utils/translator.py)
+try:
+    from app.utils.translator import translate_text
+    use_translate = True
+except:
+    def translate_text(text, lang):
+        return text
+    use_translate = False
+
+# ✅ Try importing RAG (optional)
 try:
     from app.core.rag import search_question
     use_rag = True
@@ -10,7 +18,7 @@ except:
 
 router = APIRouter()
 
-# Fallback answers if RAG is unavailable
+# ✅ Fallback answers if RAG is unavailable
 fallback_answers = [
     "Toddlers should eat a variety of soft fruits, cereals, and vegetables.",
     "A 2-year-old usually needs 11–14 hours of sleep in 24 hours.",
@@ -20,7 +28,8 @@ fallback_answers = [
 @router.post("/ask")
 def ask_parent_question(question: str = Form(...), lang: str = Form("en")):
     try:
-        q_en = translate_text(question, "en")
+        # Translate question to English if translator is available
+        q_en = translate_text(question, "en") if use_translate else question
 
         # Use RAG if available, else fallback
         if use_rag:
@@ -29,7 +38,8 @@ def ask_parent_question(question: str = Form(...), lang: str = Form("en")):
         else:
             answer = fallback_answers[0]
 
-        translated = translate_text(answer, lang)
+        # Translate response back to user language
+        translated = translate_text(answer, lang) if use_translate else answer
         return {"response": translated}
     except Exception as e:
         return {"response": f"❌ Error processing question. Please try again. (Debug: {str(e)})"}
