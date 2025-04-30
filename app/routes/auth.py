@@ -1,4 +1,3 @@
-
 from fastapi import APIRouter, Form
 from firebase_admin import auth
 
