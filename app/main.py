@@ -1,11 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import firebase_admin
-from firebase_admin import credentials
+from app.config.firebase_config import initialize_firebase
 from app.routes import qa, feedback, auth
 
-cred = credentials.Certificate("firebase_key.json")  # Upload your JSON here
-firebase_admin.initialize_app(cred)
+# ✅ Securely initialize Firebase
+initialize_firebase()
 
 app = FastAPI()
 
@@ -21,5 +20,6 @@ app.include_router(auth.router, prefix="/auth")
 @app.get("/")
 def home():
     return {"message": "Welcome to ParentWise API"}
+
 
 
