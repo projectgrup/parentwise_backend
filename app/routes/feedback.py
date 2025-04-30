@@ -1,4 +1,3 @@
-
 from fastapi import APIRouter, Form
 from firebase_admin import firestore
 
@@ -12,4 +11,5 @@ def submit_feedback(question: str = Form(...), answer: str = Form(...), rating: 
         "answer": answer,
         "rating": rating
     })
-    return {"status": "Feedback saved"}
+    return {"status": "saved"}
+
