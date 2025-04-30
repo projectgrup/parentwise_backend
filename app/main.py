@@ -1,25 +1,38 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from app.config.firebase_config import initialize_firebase
-from app.routes import qa, feedback, auth
-
-# ✅ Securely initialize Firebase
-initialize_firebase()
+from fastapi import FastAPI, Query
+from pydantic import BaseModel
 
 app = FastAPI()
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"]
-)
-
-app.include_router(qa.router, prefix="/qa")
-app.include_router(feedback.router, prefix="/feedback")
-app.include_router(auth.router, prefix="/auth")
-
+# Just a test route
 @app.get("/")
-def home():
-    return {"message": "Welcome to ParentWise API"}
+def root():
+    return {"message": "ParentWise API is running."}
+
+# Input model
+class AskInput(BaseModel):
+    question: str
+
+# Main Q&A endpoint
+@app.post("/ask")
+def ask_question(payload: AskInput):
+    # 🔁 Lazy import (loads only when /ask is called)
+    from langchain.vectorstores import FAISS
+    from langchain.embeddings import OpenAIEmbeddings
+    from langchain.chains.question_answering import load_qa_chain
+    from langchain.llms import OpenAI
+    from langchain.docstore.document import Document
+
+    # Load FAISS index only when needed
+    db = FAISS.load_local("app/core/faiss_index", OpenAIEmbeddings())
+
+    # Search for similar chunks
+    docs = db.similarity_search(payload.question, k=3)
+
+    # Run a QA chain
+    chain = load_qa_chain(OpenAI(temperature=0), chain_type="stuff")
+    result = chain.run(input_documents=docs, question=payload.question)
+
+    return {"answer": result}
 
 
 
