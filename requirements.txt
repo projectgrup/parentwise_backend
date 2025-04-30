@@ -11,4 +11,5 @@ transformers
 datasets
 pyngrok
 nest_asyncio
-
+streamlit
+requests
