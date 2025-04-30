@@ -5,7 +5,7 @@ import faiss
 import os
 
 # Define dataset path
-DATASET_PATH = os.path.join(os.path.dirname(__file__), "../../toddler_dataset.json")
+DATASET_PATH = os.path.join(os.path.dirname(__file__), "../../dataset.json")
 
 # Load your static dataset
 with open(DATASET_PATH, "r", encoding="utf-8") as f:
