@@ -13,3 +13,4 @@ pyngrok
 nest_asyncio
 streamlit
 requests
+argostranslate
