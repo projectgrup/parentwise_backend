@@ -1,54 +1,40 @@
 from fastapi import FastAPI, Request
-import json, os
-import difflib
+import json, os, pickle
+import torch
+from sentence_transformers import SentenceTransformer, util
 from random import choice
 
 app = FastAPI()
 
-# ✅ Load data.json safely
+# ✅ Load precomputed embeddings
 try:
-    file_path = os.path.join(os.path.dirname(__file__), "data.json")
-    with open(file_path, "r") as f:
-        data = json.load(f)
+    file_path = os.path.join(os.path.dirname(__file__), "embeddings.pkl")
+    with open(file_path, "rb") as f:
+        emb_data = pickle.load(f)
+        questions = emb_data["questions"]
+        qa_pairs = emb_data["answers"]
+        question_embeddings = emb_data["embeddings"]
 except Exception as e:
-    print("❌ data.json missing:", str(e))
-    data = {"toddler_care": {}}
+    print("❌ embeddings.pkl load error:", str(e))
+    questions, qa_pairs, question_embeddings = [], [], None
 
-# ✅ Flatten Q&A pairs
-qa_pairs = []
-for category in data.get("toddler_care", {}):
-    qa_pairs.extend(data["toddler_care"][category])
-
-# ✅ Better matching using difflib
-def find_best_answer(query):
-    query = query.lower()
-    best_score = 0
-    best_answer = "Sorry, I couldn't find a matching answer."
-
-    for pair in qa_pairs:
-        question = pair["question"].lower()
-        score = difflib.SequenceMatcher(None, query, question).ratio()
-        if score > best_score:
-            best_score = score
-            best_answer = pair["answer"]
-
-    return best_answer
-
-# ✅ Q&A route with error handling
+# ✅ Q&A route using semantic search
 @app.post("/ask_question")
 async def ask_question(req: Request):
     try:
         body = await req.json()
         question = body.get("question", "").strip()
-        if not question:
-            return {"answer": "Please enter a question."}
+        if not question or question_embeddings is None:
+            return {"answer": "Q&A system not ready or invalid input."}
 
-        print("Received question:", question)
-        answer = find_best_answer(question)
-        return {"answer": answer}
+        model = SentenceTransformer("paraphrase-albert-small-v2")
+        query_embedding = model.encode(question, convert_to_tensor=True)
+        scores = util.cos_sim(query_embedding, question_embeddings)[0]
+        best_idx = torch.argmax(scores).item()
+        return {"answer": qa_pairs[best_idx]["answer"]}
     except Exception as e:
-        print("❌ Error in /ask_question:", e)
-        return {"answer": "Something went wrong. Please try again."}
+        print("❌ /ask_question error:", e)
+        return {"answer": "Something went wrong. Try again."}
 
 # ✅ Toddler schedule generator
 @app.post("/generate_schedule")
