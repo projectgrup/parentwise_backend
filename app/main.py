@@ -1,15 +1,24 @@
 from fastapi import FastAPI, Request
 from sentence_transformers import SentenceTransformer, util
-from argostranslate import package, translate
-import json
+from transformers import MarianMTModel, MarianTokenizer
+import json, torch
 
 app = FastAPI()
-model = SentenceTransformer('all-MiniLM-L6-v2')
 
-# Load Argos Translate packages manually before running
-package.update_package_index()
+# ✅ Use lightweight embedding model to reduce memory
+model = SentenceTransformer('paraphrase-albert-small-v2')
 
-# Load QA Data
+# ✅ Simple language translation using HuggingFace MarianMT
+def translate_text(text, src_lang, tgt_lang):
+    model_name = f"Helsinki-NLP/opus-mt-{src_lang}-{tgt_lang}"
+    tokenizer = MarianTokenizer.from_pretrained(model_name)
+    translation_model = MarianMTModel.from_pretrained(model_name)
+
+    tokens = tokenizer.prepare_seq2seq_batch([text], return_tensors="pt", truncation=True)
+    translated = translation_model.generate(**tokens)
+    return tokenizer.decode(translated[0], skip_special_tokens=True)
+
+# ✅ Load QA Data
 with open("data.json", "r") as f:
     data = json.load(f)
 
@@ -26,19 +35,28 @@ async def ask_question(req: Request):
     q = body["question"]
     lang = body.get("target_language", "en")
 
+    # Translate to English if needed
     if lang != "en":
-        q_translated = translate.translate(q, lang, "en")
+        try:
+            q_translated = translate_text(q, lang, "en")
+        except:
+            return {"answer": "Translation error. Language not supported."}
     else:
         q_translated = q
 
+    # Embed & find best answer
     query_embedding = model.encode(q_translated, convert_to_tensor=True)
     scores = util.cos_sim(query_embedding, question_embeddings)[0]
     best_match = qa_pairs[scores.argmax().item()]["answer"]
 
+    # Translate back if needed
     if lang != "en":
-        best_match = translate.translate(best_match, "en", lang)
+        try:
+            best_match = translate_text(best_match, "en", lang)
+        except:
+            return {"answer": "Translation error after answer lookup."}
 
-    return { "answer": best_match }
+    return {"answer": best_match}
 
 @app.post("/generate_schedule")
 async def generate_schedule(req: Request):
