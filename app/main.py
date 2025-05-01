@@ -1,11 +1,9 @@
 from fastapi import FastAPI, Request
-from sentence_transformers import SentenceTransformer, util
-import os, json
+import json, os
 
 app = FastAPI()
-model = SentenceTransformer("paraphrase-albert-small-v2")
 
-# Load data.json safely
+# Load data.json
 try:
     file_path = os.path.join(os.path.dirname(__file__), "data.json")
     with open(file_path, "r") as f:
@@ -14,22 +12,24 @@ except Exception as e:
     print("❌ data.json missing:", str(e))
     data = {"toddler_care": {}}
 
+# Flatten Q&A pairs
 qa_pairs = []
-for topic in data["toddler_care"]:
-    qa_pairs.extend(data["toddler_care"][topic])
+for category in data.get("toddler_care", {}):
+    qa_pairs.extend(data["toddler_care"][category])
 
-questions = [item["question"] for item in qa_pairs]
-question_embeddings = model.encode(questions, convert_to_tensor=True)
+# Very simple keyword search (no ML)
+def find_best_answer(query):
+    query = query.lower()
+    for pair in qa_pairs:
+        if any(word in pair["question"].lower() for word in query.split()):
+            return pair["answer"]
+    return "Sorry, I couldn't find a matching answer."
 
 @app.post("/ask_question")
 async def ask_question(req: Request):
     body = await req.json()
-    question = body["question"]
-
-    query_embedding = model.encode(question, convert_to_tensor=True)
-    scores = util.cos_sim(query_embedding, question_embeddings)[0]
-    answer = qa_pairs[scores.argmax().item()]["answer"]
-
+    question = body.get("question", "")
+    answer = find_best_answer(question)
     return {"answer": answer}
 
 @app.post("/generate_schedule")
