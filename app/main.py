@@ -1,27 +1,35 @@
 from fastapi import FastAPI, Request
 from sentence_transformers import SentenceTransformer, util
 from transformers import MarianMTModel, MarianTokenizer
-import json, torch
+import os, json
 
 app = FastAPI()
 
-# ✅ Use lightweight embedding model to reduce memory
-model = SentenceTransformer('paraphrase-albert-small-v2')
+# ✅ Use low-memory embedding model
+model = SentenceTransformer("paraphrase-albert-small-v2")
 
-# ✅ Simple language translation using HuggingFace MarianMT
+# ✅ Translation with MarianMT
 def translate_text(text, src_lang, tgt_lang):
-    model_name = f"Helsinki-NLP/opus-mt-{src_lang}-{tgt_lang}"
-    tokenizer = MarianTokenizer.from_pretrained(model_name)
-    translation_model = MarianMTModel.from_pretrained(model_name)
+    try:
+        model_name = f"Helsinki-NLP/opus-mt-{src_lang}-{tgt_lang}"
+        tokenizer = MarianTokenizer.from_pretrained(model_name)
+        translator_model = MarianMTModel.from_pretrained(model_name)
+        tokens = tokenizer.prepare_seq2seq_batch([text], return_tensors="pt", truncation=True)
+        translated = translator_model.generate(**tokens)
+        return tokenizer.decode(translated[0], skip_special_tokens=True)
+    except Exception:
+        return None
 
-    tokens = tokenizer.prepare_seq2seq_batch([text], return_tensors="pt", truncation=True)
-    translated = translation_model.generate(**tokens)
-    return tokenizer.decode(translated[0], skip_special_tokens=True)
+# ✅ Safely load data.json
+try:
+    file_path = os.path.join(os.path.dirname(__file__), "data.json")
+    with open(file_path, "r") as f:
+        data = json.load(f)
+except Exception as e:
+    print("❌ Failed to load data.json:", str(e))
+    data = {"toddler_care": {}}
 
-# ✅ Load QA Data
-with open("data.json", "r") as f:
-    data = json.load(f)
-
+# Prepare data
 qa_pairs = []
 for topic in data["toddler_care"]:
     qa_pairs.extend(data["toddler_care"][topic])
@@ -35,28 +43,22 @@ async def ask_question(req: Request):
     q = body["question"]
     lang = body.get("target_language", "en")
 
-    # Translate to English if needed
-    if lang != "en":
-        try:
-            q_translated = translate_text(q, lang, "en")
-        except:
-            return {"answer": "Translation error. Language not supported."}
-    else:
-        q_translated = q
+    # Translate input to English if needed
+    q_translated = translate_text(q, lang, "en") if lang != "en" else q
+    if not q_translated:
+        return {"answer": "⚠️ Translation to English failed. Please try another language."}
 
-    # Embed & find best answer
+    # Retrieve best match
     query_embedding = model.encode(q_translated, convert_to_tensor=True)
     scores = util.cos_sim(query_embedding, question_embeddings)[0]
-    best_match = qa_pairs[scores.argmax().item()]["answer"]
+    best_answer = qa_pairs[scores.argmax().item()]["answer"]
 
-    # Translate back if needed
-    if lang != "en":
-        try:
-            best_match = translate_text(best_match, "en", lang)
-        except:
-            return {"answer": "Translation error after answer lookup."}
+    # Translate back to user language
+    final_answer = translate_text(best_answer, "en", lang) if lang != "en" else best_answer
+    if not final_answer:
+        return {"answer": "⚠️ Translation to your language failed. Try again."}
 
-    return {"answer": best_match}
+    return {"answer": final_answer}
 
 @app.post("/generate_schedule")
 async def generate_schedule(req: Request):
