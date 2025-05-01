@@ -6,6 +6,11 @@ from random import choice
 
 app = FastAPI()
 
+# ✅ Add a root route to prevent 502 error on Render
+@app.get("/")
+def read_root():
+    return {"message": "✅ ParentWise backend is running."}
+
 # ✅ Load precomputed embeddings
 try:
     file_path = os.path.join(os.path.dirname(__file__), "embeddings.pkl")
@@ -14,6 +19,7 @@ try:
         questions = emb_data["questions"]
         qa_pairs = emb_data["answers"]
         question_embeddings = emb_data["embeddings"]
+        print("✅ embeddings.pkl loaded successfully")
 except Exception as e:
     print("❌ embeddings.pkl load error:", str(e))
     questions, qa_pairs, question_embeddings = [], [], None
@@ -92,7 +98,7 @@ async def generate_story(req: Request):
     selected = stories.get(theme, stories["default"])
     return {"story": choice(selected)}
 
-# ✅ Mock Firebase token verification
+# ✅ Firebase-style mock token verification
 @app.post("/auth/verify")
 async def verify_token(req: Request):
     body = await req.json()
