@@ -1,9 +1,10 @@
 from fastapi import FastAPI, Request
 import json, os
+import difflib
 
 app = FastAPI()
 
-# Load data.json
+# ✅ Load data.json safely
 try:
     file_path = os.path.join(os.path.dirname(__file__), "data.json")
     with open(file_path, "r") as f:
@@ -12,19 +13,27 @@ except Exception as e:
     print("❌ data.json missing:", str(e))
     data = {"toddler_care": {}}
 
-# Flatten Q&A pairs
+# ✅ Flatten Q&A pairs
 qa_pairs = []
 for category in data.get("toddler_care", {}):
     qa_pairs.extend(data["toddler_care"][category])
 
-# Very simple keyword search (no ML)
+# ✅ Improved fuzzy string matching
 def find_best_answer(query):
     query = query.lower()
-    for pair in qa_pairs:
-        if any(word in pair["question"].lower() for word in query.split()):
-            return pair["answer"]
-    return "Sorry, I couldn't find a matching answer."
+    best_score = 0
+    best_answer = "Sorry, I couldn't find a matching answer."
 
+    for pair in qa_pairs:
+        question = pair["question"].lower()
+        score = difflib.SequenceMatcher(None, query, question).ratio()
+        if score > best_score:
+            best_score = score
+            best_answer = pair["answer"]
+
+    return best_answer
+
+# ✅ Q&A API
 @app.post("/ask_question")
 async def ask_question(req: Request):
     body = await req.json()
@@ -32,6 +41,7 @@ async def ask_question(req: Request):
     answer = find_best_answer(question)
     return {"answer": answer}
 
+# ✅ Toddler schedule planner
 @app.post("/generate_schedule")
 async def generate_schedule(req: Request):
     body = await req.json()
@@ -53,6 +63,7 @@ async def generate_schedule(req: Request):
     routine = "\n".join([line for line in lines if line])
     return {"routine": routine}
 
+# ✅ Feedback submission
 @app.post("/submit_feedback")
 async def submit_feedback(req: Request):
     body = await req.json()
