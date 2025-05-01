@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request
 import json, os
 import difflib
+from random import choice
 
 app = FastAPI()
 
@@ -18,7 +19,7 @@ qa_pairs = []
 for category in data.get("toddler_care", {}):
     qa_pairs.extend(data["toddler_care"][category])
 
-# ✅ Improved fuzzy string matching
+# ✅ Better matching using difflib
 def find_best_answer(query):
     query = query.lower()
     best_score = 0
@@ -33,15 +34,23 @@ def find_best_answer(query):
 
     return best_answer
 
-# ✅ Q&A API
+# ✅ Q&A route with error handling
 @app.post("/ask_question")
 async def ask_question(req: Request):
-    body = await req.json()
-    question = body.get("question", "")
-    answer = find_best_answer(question)
-    return {"answer": answer}
+    try:
+        body = await req.json()
+        question = body.get("question", "").strip()
+        if not question:
+            return {"answer": "Please enter a question."}
 
-# ✅ Toddler schedule planner
+        print("Received question:", question)
+        answer = find_best_answer(question)
+        return {"answer": answer}
+    except Exception as e:
+        print("❌ Error in /ask_question:", e)
+        return {"answer": "Something went wrong. Please try again."}
+
+# ✅ Toddler schedule generator
 @app.post("/generate_schedule")
 async def generate_schedule(req: Request):
     body = await req.json()
@@ -63,7 +72,7 @@ async def generate_schedule(req: Request):
     routine = "\n".join([line for line in lines if line])
     return {"routine": routine}
 
-# ✅ Feedback submission
+# ✅ Feedback logging
 @app.post("/submit_feedback")
 async def submit_feedback(req: Request):
     body = await req.json()
@@ -71,3 +80,38 @@ async def submit_feedback(req: Request):
         json.dump(body, f)
         f.write("\n")
     return {"status": "success"}
+
+# ✅ Simple story generator
+@app.post("/story/generate")
+async def generate_story(req: Request):
+    body = await req.json()
+    age = body.get("age", 3)
+    theme = body.get("theme", "friendship").lower()
+
+    stories = {
+        "jungle": [
+            f"Once upon a time, a curious {age}-year-old monkey explored the jungle and made new animal friends.",
+            f"In a lush jungle, a baby elephant went on an adventure to find the tallest tree. What a journey!"
+        ],
+        "friendship": [
+            f"A little rabbit learned how to share carrots with a new friend and became the happiest bunny in the meadow.",
+            f"A {age}-year-old bear invited all the forest animals to a tea party. Everyone laughed and played together."
+        ],
+        "default": [
+            f"Once there was a magical cloud that danced in the sky just for a {age}-year-old child.",
+            f"A star fell to Earth and whispered bedtime wishes to every sleeping child, including you."
+        ]
+    }
+
+    selected = stories.get(theme, stories["default"])
+    return {"story": choice(selected)}
+
+# ✅ Mock Firebase token verification
+@app.post("/auth/verify")
+async def verify_token(req: Request):
+    body = await req.json()
+    token = body.get("token", "").strip()
+    if token == "demo-token":
+        return {"status": "success", "user": "test_user"}
+    else:
+        return {"status": "error", "message": "Invalid token"}
