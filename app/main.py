@@ -1,12 +1,14 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from sentence_transformers import SentenceTransformer, util
+import firebase_admin
+from firebase_admin import credentials, auth
 import json, os
 from random import choice
 
 app = FastAPI()
 
-# Allow CORS (important for frontend connection)
+# Allow CORS for frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -15,27 +17,30 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Load Firebase Admin
+cred = credentials.Certificate("config/firebase_adminsdk.json")
+firebase_admin.initialize_app(cred)
+
 @app.get("/")
 def read_root():
-    return {"message": "✅ ParentWise backend is running with semantic search."}
+    return {"message": "✅ ParentWise backend is running."}
 
-# ✅ Load Q&A data
+# Load data.json
 try:
-    with open(os.path.join(os.path.dirname(__file__), "data.json"), "r") as f:
+    with open("data.json", "r") as f:
         data = json.load(f)
     qa_pairs = []
     for topic in data.get("toddler_care", {}):
         qa_pairs.extend(data["toddler_care"][topic])
     print(f"✅ Loaded {len(qa_pairs)} Q&A pairs.")
 except Exception as e:
-    print("❌ Could not load data.json:", e)
+    print("❌ Failed to load Q&A data:", e)
     qa_pairs = []
 
-# ✅ Load model and encode questions
-model = SentenceTransformer('all-MiniLM-L6-v2')
+# Sentence Transformer model
+model = SentenceTransformer("all-MiniLM-L6-v2")
 question_texts = [pair["question"] for pair in qa_pairs]
 question_embeddings = model.encode(question_texts, convert_to_tensor=True)
-print("✅ Question embeddings generated.")
 
 @app.post("/ask_question")
 async def ask_question(req: Request):
@@ -52,7 +57,7 @@ async def ask_question(req: Request):
 
         return {"answer": best_answer}
     except Exception as e:
-        print("❌ /ask_question error:", e)
+        print("/ask_question error:", e)
         return {"answer": "Something went wrong."}
 
 @app.post("/generate_schedule")
@@ -100,12 +105,16 @@ async def generate_story(req: Request):
             f"A magical cloud danced across the sky just for a {age}-year-old child."
         ]
     }
-
     return {"story": choice(stories.get(theme, stories["default"]))}
 
 @app.post("/auth/verify")
 async def verify_token(req: Request):
-    token = (await req.json()).get("token", "")
-    if token == "demo-token":
-        return {"status": "success", "user": "demo"}
-    return {"status": "error", "message": "Invalid token"}
+    try:
+        token = (await req.json()).get("token", "")
+        decoded_token = auth.verify_id_token(token)
+        uid = decoded_token["uid"]
+        email = decoded_token.get("email", "")
+        return {"status": "success", "uid": uid, "email": email}
+    except Exception as e:
+        print("Token verification error:", e)
+        return {"status": "error", "message": str(e)}
