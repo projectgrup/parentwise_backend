@@ -19,7 +19,7 @@ model = SentenceTransformer("paraphrase-albert-small-v2")
 embeddings = model.encode(questions, convert_to_tensor=True)
 
 # Save to app/embeddings.pkl
-with open("embeddings.pkl", "wb") as f:
+with open("app/embeddings.pkl", "wb") as f:
     pickle.dump({
         "questions": questions,
         "answers": qa_pairs,
