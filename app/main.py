@@ -1,13 +1,13 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import PlainTextResponse
 from sentence_transformers import SentenceTransformer, util
-import os
 import json
 from random import choice
 
 app = FastAPI()
 
-# ✅ Enable CORS for frontend
+# Enable CORS for frontend connection (Streamlit)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -16,18 +16,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ✅ Root health check
+# Root health check
 @app.get("/")
 def read_root():
     return {"message": "✅ ParentWise backend is running."}
 
-# ✅ Load Q&A data
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_PATH = os.path.join(BASE_DIR, "data.json")
+@app.head("/")
+def head_root():
+    return PlainTextResponse("OK")
 
+# Load Q&A data
 qa_pairs = []
 try:
-    with open(DATA_PATH, "r") as f:
+    with open("data.json", "r") as f:
         data = json.load(f)
         for topic in data.get("toddler_care", {}):
             qa_pairs.extend(data["toddler_care"][topic])
@@ -36,7 +37,7 @@ except Exception as e:
     print("❌ Could not load data.json:", e)
     qa_pairs = [{"question": "What is toddler care?", "answer": "Toddler care involves routines, meals, naps, and love."}]
 
-# ✅ Lazy load model
+# Lazy load model and embeddings
 model = None
 question_embeddings = None
 
@@ -52,7 +53,7 @@ def load_model():
     except Exception as e:
         print("❌ Model loading failed:", e)
 
-# ✅ Semantic Q&A
+# Semantic Q&A Endpoint
 @app.post("/ask_question")
 async def ask_question(req: Request):
     global model, question_embeddings
@@ -73,7 +74,7 @@ async def ask_question(req: Request):
         print("❌ Error in /ask_question:", e)
         return {"answer": "Something went wrong. Please try again later."}
 
-# ✅ Schedule Generator
+# Schedule Generator
 @app.post("/generate_schedule")
 async def generate_schedule(req: Request):
     body = await req.json()
@@ -96,7 +97,7 @@ async def generate_schedule(req: Request):
     routine = "\n".join([line for line in lines if line])
     return {"routine": routine}
 
-# ✅ Story Generator
+# Story Generator
 @app.post("/story/generate")
 async def generate_story(req: Request):
     body = await req.json()
@@ -120,7 +121,20 @@ async def generate_story(req: Request):
 
     return {"story": choice(stories.get(theme, stories["default"]))}
 
-# ✅ Dummy Auth (For Demo)
+# Feedback Collection
+@app.post("/submit_feedback")
+async def submit_feedback(req: Request):
+    body = await req.json()
+    try:
+        with open("feedback_log.json", "a") as f:
+            json.dump(body, f)
+            f.write("\n")
+        return {"status": "success"}
+    except Exception as e:
+        print("❌ Feedback saving failed:", e)
+        return {"status": "error", "message": "Failed to save feedback."}
+
+# Dummy Auth for Demo
 @app.post("/auth/verify")
 async def verify_token(req: Request):
     body = await req.json()
@@ -129,7 +143,3 @@ async def verify_token(req: Request):
         return {"status": "success", "user": "demo"}
     else:
         return {"status": "error", "message": "Invalid token."}
-
-# ⚠️ Feedback saving disabled on Render
-# Render doesn't support writing to disk at runtime.
-# You can later integrate Firebase or Firestore for saving feedback.
