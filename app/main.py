@@ -26,15 +26,16 @@ def head_root():
     return PlainTextResponse("OK")
 
 # Load Q&A data
+# Load Q&A data
 qa_pairs = []
 try:
-    with open("data.json", "r") as f:
+    with open("app/data.json", "r") as f:  # Update the path here
         data = json.load(f)
         for topic in data.get("toddler_care", {}):
             qa_pairs.extend(data["toddler_care"][topic])
     print(f"✅ Loaded {len(qa_pairs)} Q&A pairs.")
 except Exception as e:
-    print("❌ Could not load data.json:", e)
+    print("❌ Could not load app/data.json:", e)
     qa_pairs = [{"question": "What is toddler care?", "answer": "Toddler care involves routines, meals, naps, and love."}]
 
 # Lazy load model and embeddings
