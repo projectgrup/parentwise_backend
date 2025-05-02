@@ -1,12 +1,23 @@
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+from sentence_transformers import SentenceTransformer, util
 import json, os
 from random import choice
 
 app = FastAPI()
 
+# Allow CORS (important for frontend connection)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 @app.get("/")
 def read_root():
-    return {"message": "✅ ParentWise backend is running without embeddings."}
+    return {"message": "✅ ParentWise backend is running with semantic search."}
 
 # ✅ Load Q&A data
 try:
@@ -20,13 +31,11 @@ except Exception as e:
     print("❌ Could not load data.json:", e)
     qa_pairs = []
 
-# ✅ Simple keyword matching fallback
-def keyword_search(query):
-    query = query.lower()
-    for pair in qa_pairs:
-        if any(word in pair["question"].lower() for word in query.split()):
-            return pair["answer"]
-    return "Sorry, I couldn't find a relevant answer. Try rephrasing."
+# ✅ Load model and encode questions
+model = SentenceTransformer('all-MiniLM-L6-v2')
+question_texts = [pair["question"] for pair in qa_pairs]
+question_embeddings = model.encode(question_texts, convert_to_tensor=True)
+print("✅ Question embeddings generated.")
 
 @app.post("/ask_question")
 async def ask_question(req: Request):
@@ -35,7 +44,13 @@ async def ask_question(req: Request):
         question = body.get("question", "").strip()
         if not question:
             return {"answer": "Please enter a question."}
-        return {"answer": keyword_search(question)}
+
+        query_embedding = model.encode(question, convert_to_tensor=True)
+        hits = util.semantic_search(query_embedding, question_embeddings, top_k=1)
+        best_match_idx = hits[0][0]['corpus_id']
+        best_answer = qa_pairs[best_match_idx]['answer']
+
+        return {"answer": best_answer}
     except Exception as e:
         print("❌ /ask_question error:", e)
         return {"answer": "Something went wrong."}
