@@ -1,9 +1,8 @@
+pip>=24.0
 fastapi
 uvicorn
 sentence-transformers
 torch
 firebase-admin
---index-url https://pypi.org/simple
---retries 10
---timeout 30
+
 
