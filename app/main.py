@@ -1,12 +1,13 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from sentence_transformers import SentenceTransformer, util
+import os
 import json
 from random import choice
 
 app = FastAPI()
 
-# ✅ Enable CORS for frontend connection (Streamlit)
+# ✅ Enable CORS for frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -21,9 +22,12 @@ def read_root():
     return {"message": "✅ ParentWise backend is running."}
 
 # ✅ Load Q&A data
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_PATH = os.path.join(BASE_DIR, "data.json")
+
 qa_pairs = []
 try:
-    with open("data.json", "r") as f:
+    with open(DATA_PATH, "r") as f:
         data = json.load(f)
         for topic in data.get("toddler_care", {}):
             qa_pairs.extend(data["toddler_care"][topic])
@@ -32,7 +36,7 @@ except Exception as e:
     print("❌ Could not load data.json:", e)
     qa_pairs = [{"question": "What is toddler care?", "answer": "Toddler care involves routines, meals, naps, and love."}]
 
-# ✅ Lazy load model and embeddings
+# ✅ Lazy load model
 model = None
 question_embeddings = None
 
@@ -48,7 +52,7 @@ def load_model():
     except Exception as e:
         print("❌ Model loading failed:", e)
 
-# ✅ Semantic Q&A Endpoint
+# ✅ Semantic Q&A
 @app.post("/ask_question")
 async def ask_question(req: Request):
     global model, question_embeddings
@@ -116,20 +120,7 @@ async def generate_story(req: Request):
 
     return {"story": choice(stories.get(theme, stories["default"]))}
 
-# ✅ Feedback Collection
-@app.post("/submit_feedback")
-async def submit_feedback(req: Request):
-    body = await req.json()
-    try:
-        with open("feedback_log.json", "a") as f:
-            json.dump(body, f)
-            f.write("\n")
-        return {"status": "success"}
-    except Exception as e:
-        print("❌ Feedback saving failed:", e)
-        return {"status": "error", "message": "Failed to save feedback."}
-
-# ✅ Dummy Auth for Demo
+# ✅ Dummy Auth (For Demo)
 @app.post("/auth/verify")
 async def verify_token(req: Request):
     body = await req.json()
@@ -138,3 +129,7 @@ async def verify_token(req: Request):
         return {"status": "success", "user": "demo"}
     else:
         return {"status": "error", "message": "Invalid token."}
+
+# ⚠️ Feedback saving disabled on Render
+# Render doesn't support writing to disk at runtime.
+# You can later integrate Firebase or Firestore for saving feedback.
