@@ -1,48 +1,45 @@
 from fastapi import FastAPI, Request
-import json, os, pickle
-import torch
-from sentence_transformers import SentenceTransformer, util
+import json, os
 from random import choice
 
 app = FastAPI()
 
-# ✅ Add a root route to prevent 502 error on Render
 @app.get("/")
 def read_root():
-    return {"message": "✅ ParentWise backend is running."}
+    return {"message": "✅ ParentWise backend is running without embeddings."}
 
-# ✅ Load precomputed embeddings
+# ✅ Load Q&A data
 try:
-    file_path = os.path.join(os.path.dirname(__file__), "embeddings.pkl")
-    with open(file_path, "rb") as f:
-        emb_data = pickle.load(f)
-        questions = emb_data["questions"]
-        qa_pairs = emb_data["answers"]
-        question_embeddings = emb_data["embeddings"]
-        print("✅ embeddings.pkl loaded successfully")
+    with open(os.path.join(os.path.dirname(__file__), "data.json"), "r") as f:
+        data = json.load(f)
+    qa_pairs = []
+    for topic in data.get("toddler_care", {}):
+        qa_pairs.extend(data["toddler_care"][topic])
+    print(f"✅ Loaded {len(qa_pairs)} Q&A pairs.")
 except Exception as e:
-    print("❌ embeddings.pkl load error:", str(e))
-    questions, qa_pairs, question_embeddings = [], [], None
+    print("❌ Could not load data.json:", e)
+    qa_pairs = []
 
-# ✅ Q&A route using semantic search
+# ✅ Simple keyword matching fallback
+def keyword_search(query):
+    query = query.lower()
+    for pair in qa_pairs:
+        if any(word in pair["question"].lower() for word in query.split()):
+            return pair["answer"]
+    return "Sorry, I couldn't find a relevant answer. Try rephrasing."
+
 @app.post("/ask_question")
 async def ask_question(req: Request):
     try:
         body = await req.json()
         question = body.get("question", "").strip()
-        if not question or question_embeddings is None:
-            return {"answer": "Q&A system not ready or invalid input."}
-
-        model = SentenceTransformer("paraphrase-albert-small-v2")
-        query_embedding = model.encode(question, convert_to_tensor=True)
-        scores = util.cos_sim(query_embedding, question_embeddings)[0]
-        best_idx = torch.argmax(scores).item()
-        return {"answer": qa_pairs[best_idx]["answer"]}
+        if not question:
+            return {"answer": "Please enter a question."}
+        return {"answer": keyword_search(question)}
     except Exception as e:
         print("❌ /ask_question error:", e)
-        return {"answer": "Something went wrong. Try again."}
+        return {"answer": "Something went wrong."}
 
-# ✅ Toddler schedule generator
 @app.post("/generate_schedule")
 async def generate_schedule(req: Request):
     body = await req.json()
@@ -61,10 +58,8 @@ async def generate_schedule(req: Request):
         "Dinner and wind-down activities.",
         "Bedtime around 8 PM."
     ]
-    routine = "\n".join([line for line in lines if line])
-    return {"routine": routine}
+    return {"routine": "\n".join([l for l in lines if l])}
 
-# ✅ Feedback logging
 @app.post("/submit_feedback")
 async def submit_feedback(req: Request):
     body = await req.json()
@@ -73,7 +68,6 @@ async def submit_feedback(req: Request):
         f.write("\n")
     return {"status": "success"}
 
-# ✅ Simple story generator
 @app.post("/story/generate")
 async def generate_story(req: Request):
     body = await req.json()
@@ -82,28 +76,21 @@ async def generate_story(req: Request):
 
     stories = {
         "jungle": [
-            f"Once upon a time, a curious {age}-year-old monkey explored the jungle and made new animal friends.",
-            f"In a lush jungle, a baby elephant went on an adventure to find the tallest tree. What a journey!"
+            f"Once upon a time, a curious {age}-year-old monkey explored the jungle and made new friends."
         ],
         "friendship": [
-            f"A little rabbit learned how to share carrots with a new friend and became the happiest bunny in the meadow.",
-            f"A {age}-year-old bear invited all the forest animals to a tea party. Everyone laughed and played together."
+            f"A {age}-year-old bear invited everyone to a party in the forest and they all had fun."
         ],
         "default": [
-            f"Once there was a magical cloud that danced in the sky just for a {age}-year-old child.",
-            f"A star fell to Earth and whispered bedtime wishes to every sleeping child, including you."
+            f"A magical cloud danced across the sky just for a {age}-year-old child."
         ]
     }
 
-    selected = stories.get(theme, stories["default"])
-    return {"story": choice(selected)}
+    return {"story": choice(stories.get(theme, stories["default"]))}
 
-# ✅ Firebase-style mock token verification
 @app.post("/auth/verify")
 async def verify_token(req: Request):
-    body = await req.json()
-    token = body.get("token", "").strip()
+    token = (await req.json()).get("token", "")
     if token == "demo-token":
-        return {"status": "success", "user": "test_user"}
-    else:
-        return {"status": "error", "message": "Invalid token"}
+        return {"status": "success", "user": "demo"}
+    return {"status": "error", "message": "Invalid token"}
