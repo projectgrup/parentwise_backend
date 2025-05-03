@@ -8,4 +8,5 @@ redis
 langchain
 openai
 python-dotenv
-faiss
+faiss-cpu
+
