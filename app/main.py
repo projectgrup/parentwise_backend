@@ -2,13 +2,15 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 from sentence_transformers import SentenceTransformer, util
+from firebase_admin import credentials, initialize_app
+import os
 import json
-from random import choice
 import torch
+from random import choice
 
 app = FastAPI()
 
-# Enable CORS for Streamlit frontend
+# Enable CORS for Streamlit frontend or any external calls
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -25,17 +27,29 @@ def read_root():
 def head_root():
     return PlainTextResponse("OK")
 
+# Firebase Init
+try:
+    firebase_creds = os.environ.get("FIREBASE_CREDENTIALS")
+    if firebase_creds:
+        cred_dict = json.loads(firebase_creds)
+        cred = credentials.Certificate(cred_dict)
+        initialize_app(cred)
+        print("✅ Firebase initialized.")
+    else:
+        print("⚠️ No FIREBASE_CREDENTIALS found in env.")
+except Exception as e:
+    print("❌ Firebase init failed:", e)
+
 # Load Q&A data
 qa_pairs = []
 try:
-    with open("app/data.json", "r") as f:
+    with open("app/utils/data.json", "r") as f:
         data = json.load(f)
         for topic in data.get("toddler_care", {}):
             qa_pairs.extend(data["toddler_care"][topic])
     print(f"✅ Loaded {len(qa_pairs)} Q&A pairs.")
 except Exception as e:
     print("❌ Failed to load Q&A data:", e)
-    qa_pairs = []
 
 # Lazy model load
 model = None
