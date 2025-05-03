@@ -4,14 +4,18 @@ import numpy as np
 import json
 from sentence_transformers import SentenceTransformer
 
+# Redis client setup
 redis_client = redis.Redis(host='localhost', port=6379, decode_responses=True)
 
+# Global variables
 model = None
 index = None
 qa_pairs = []
 
 def load_qa_data():
     global qa_pairs
+    if qa_pairs:
+        return  # already loaded
     try:
         with open("app/data.json", "r") as f:
             data = json.load(f)
@@ -27,21 +31,26 @@ def load_model_and_index():
         model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
     if index is None:
         questions = [pair["question"] for pair in qa_pairs]
-        vectors = model.encode(questions)
+        vectors = model.encode(questions, convert_to_numpy=True)
         vectors = vectors / np.linalg.norm(vectors, axis=1)[:, None]
         index = faiss.IndexFlatIP(vectors.shape[1])
         index.add(vectors)
 
 def search_answer(query, top_k=1):
+    load_qa_data()
+    load_model_and_index()
+
     cached = redis_client.get(query)
     if cached:
-        return eval(cached)[0]
+        try:
+            return json.loads(cached)[0]
+        except:
+            pass
 
-    load_model_and_index()
-    qvec = model.encode([query])
+    qvec = model.encode([query], convert_to_numpy=True)
     qvec = qvec / np.linalg.norm(qvec)
     _, idx = index.search(qvec, top_k)
 
     result = [qa_pairs[i]["answer"] for i in idx[0]]
-    redis_client.set(query, str(result), ex=86400)
+    redis_client.set(query, json.dumps(result), ex=86400)
     return result[0]
