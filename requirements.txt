@@ -8,4 +8,4 @@ redis
 langchain
 openai
 python-dotenv
-
+faiss
