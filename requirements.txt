@@ -4,5 +4,8 @@ uvicorn
 sentence-transformers
 torch
 firebase-admin
-
+redis
+langchain
+openai
+python-dotenv
 
