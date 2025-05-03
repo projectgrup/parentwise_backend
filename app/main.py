@@ -1,16 +1,13 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
-from sentence_transformers import SentenceTransformer, util
-from firebase_admin import credentials, initialize_app
-import os
-import json
-import torch
 from random import choice
+import json
+from app.core import rag  # ✅ Import custom rag module
 
 app = FastAPI()
 
-# Enable CORS for Streamlit frontend or any external calls
+# Enable CORS for frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -27,45 +24,13 @@ def read_root():
 def head_root():
     return PlainTextResponse("OK")
 
-# Firebase Init
-try:
-    firebase_creds = os.environ.get("FIREBASE_CREDENTIALS")
-    if firebase_creds:
-        cred_dict = json.loads(firebase_creds)
-        cred = credentials.Certificate(cred_dict)
-        initialize_app(cred)
-        print("✅ Firebase initialized.")
-    else:
-        print("⚠️ No FIREBASE_CREDENTIALS found in env.")
-except Exception as e:
-    print("❌ Firebase init failed:", e)
-
-# Load Q&A data
-qa_pairs = []
-try:
-    with open("app/utils/data.json", "r") as f:
-        data = json.load(f)
-        for topic in data.get("toddler_care", {}):
-            qa_pairs.extend(data["toddler_care"][topic])
-    print(f"✅ Loaded {len(qa_pairs)} Q&A pairs.")
-except Exception as e:
-    print("❌ Failed to load Q&A data:", e)
-
-# Lazy model load
-model = None
-question_embeddings = None
-
+# ✅ Load model and data on startup
 @app.on_event("startup")
-def init_model():
-    global model, question_embeddings
-    try:
-        model = SentenceTransformer("all-MiniLM-L6-v2")
-        questions = [pair["question"] for pair in qa_pairs]
-        question_embeddings = model.encode(questions, convert_to_tensor=True)
-        print("✅ Model and embeddings ready.")
-    except Exception as e:
-        print("❌ Model init error:", e)
+def on_startup():
+    rag.load_qa_data()
+    rag.load_model_and_index()
 
+# ✅ Parent Q&A endpoint using FAISS + Redis + RAG
 @app.post("/ask_question")
 async def ask_question(req: Request):
     try:
@@ -74,17 +39,14 @@ async def ask_question(req: Request):
 
         if not q:
             return {"answer": "Please enter a question."}
-        if not model or not question_embeddings:
-            return {"answer": "Model is still loading. Try again soon."}
 
-        q_emb = model.encode(q, convert_to_tensor=True)
-        result = util.semantic_search(q_emb, question_embeddings, top_k=1)
-        match = result[0][0]["corpus_id"]
-        return {"answer": qa_pairs[match]["answer"]}
+        answer = rag.search_answer(q)
+        return {"answer": answer}
     except Exception as e:
         print("❌ Q&A error:", e)
         return {"answer": "Something went wrong. Try again."}
 
+# ✅ Toddler Schedule Generator
 @app.post("/generate_schedule")
 async def generate_schedule(req: Request):
     body = await req.json()
@@ -106,6 +68,7 @@ async def generate_schedule(req: Request):
     routine = "\n".join([line for line in parts if line])
     return {"routine": routine}
 
+# ✅ Story Generator
 @app.post("/story/generate")
 async def generate_story(req: Request):
     body = await req.json()
@@ -133,6 +96,7 @@ async def generate_story(req: Request):
 
     return {"story": choice(stories.get(theme, stories["default"]))}
 
+# ✅ Feedback Logger
 @app.post("/submit_feedback")
 async def submit_feedback(req: Request):
     body = await req.json()
@@ -145,6 +109,7 @@ async def submit_feedback(req: Request):
         print("❌ Feedback error:", e)
         return {"status": "error", "message": "Failed to log feedback."}
 
+# ✅ Firebase Token Verification (Demo)
 @app.post("/auth/verify")
 async def verify_token(req: Request):
     token = (await req.json()).get("token", "")
