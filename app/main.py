@@ -36,14 +36,15 @@ async def ask_question(req: Request):
     try:
         body = await req.json()
         q = body.get("question", "").strip()
+
         if not q:
             return {"answer": "Please enter a question."}
+
         answer = rag.search_answer(q)
         return {"answer": answer}
     except Exception as e:
-        import traceback
-        traceback.print_exc()  # 🔍 Print full error
-        return {"answer": f"Something went wrong: {str(e)}"}
+        print("❌ Q&A error:", e)
+        return {"answer": "Something went wrong. Try again."}
 
 # ✅ FIX for frontend — route alias for Streamlit `/ask`
 @app.post("/ask")
