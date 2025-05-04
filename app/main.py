@@ -40,9 +40,6 @@ async def ask_question(req: Request):
             return {"answer": "Please enter a question."}
         answer = rag.search_answer(q)
         return {"answer": answer}
-    except Exception as e:
-        print("❌ Q&A error:", e)
-        return {"answer": "Something went wrong. Try again."}
 
 # ✅ FIX for frontend — route alias for Streamlit `/ask`
 @app.post("/ask")
