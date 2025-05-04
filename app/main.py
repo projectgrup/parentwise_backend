@@ -3,11 +3,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 from random import choice
 import json
-from app.core import rag  # ✅ Import custom rag module
+from app.core import rag  # ✅ Import custom RAG module
 
 app = FastAPI()
 
-# Enable CORS for frontend
+# ✅ Enable CORS for frontend communication
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -24,27 +24,30 @@ def read_root():
 def head_root():
     return PlainTextResponse("OK")
 
-# ✅ Load model and data on startup
+# ✅ Load model + data on server startup
 @app.on_event("startup")
 def on_startup():
     rag.load_qa_data()
     rag.load_model_and_index()
 
-# ✅ Parent Q&A endpoint using FAISS + Redis + RAG
+# ✅ Parent Q&A endpoint (used internally)
 @app.post("/ask_question")
 async def ask_question(req: Request):
     try:
         body = await req.json()
         q = body.get("question", "").strip()
-
         if not q:
             return {"answer": "Please enter a question."}
-
         answer = rag.search_answer(q)
         return {"answer": answer}
     except Exception as e:
         print("❌ Q&A error:", e)
         return {"answer": "Something went wrong. Try again."}
+
+# ✅ FIX for frontend — route alias for Streamlit `/ask`
+@app.post("/ask")
+async def ask_alias(req: Request):
+    return await ask_question(req)
 
 # ✅ Toddler Schedule Generator
 @app.post("/generate_schedule")
@@ -109,7 +112,7 @@ async def submit_feedback(req: Request):
         print("❌ Feedback error:", e)
         return {"status": "error", "message": "Failed to log feedback."}
 
-# ✅ Firebase Token Verification (Demo)
+# ✅ Firebase Token Verification (Demo only)
 @app.post("/auth/verify")
 async def verify_token(req: Request):
     token = (await req.json()).get("token", "")
