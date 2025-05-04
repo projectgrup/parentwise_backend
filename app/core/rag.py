@@ -11,7 +11,7 @@ qa_pairs = []
 def load_qa_data():
     global qa_pairs
     if qa_pairs:
-        return  # already loaded
+        return
     try:
         with open("app/data.json", "r") as f:
             data = json.load(f)
