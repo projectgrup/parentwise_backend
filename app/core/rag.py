@@ -1,11 +1,7 @@
-import redis
 import faiss
 import numpy as np
 import json
 from sentence_transformers import SentenceTransformer
-
-# Redis client setup
-redis_client = redis.Redis(host='localhost', port=6379, decode_responses=True)
 
 # Global variables
 model = None
@@ -40,17 +36,9 @@ def search_answer(query, top_k=1):
     load_qa_data()
     load_model_and_index()
 
-    cached = redis_client.get(query)
-    if cached:
-        try:
-            return json.loads(cached)[0]
-        except:
-            pass
-
     qvec = model.encode([query], convert_to_numpy=True)
     qvec = qvec / np.linalg.norm(qvec)
     _, idx = index.search(qvec, top_k)
 
     result = [qa_pairs[i]["answer"] for i in idx[0]]
-    redis_client.set(query, json.dumps(result), ex=86400)
     return result[0]
