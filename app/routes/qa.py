@@ -1,12 +1,18 @@
-from fastapi import APIRouter, Form
-from app.core.knowledge import search_answer
-from app.utils.translator import translate_text
+# app/routes/qa.py
+from fastapi import APIRouter
+from pydantic import BaseModel
+from app.core.rag import search_answer
 
 router = APIRouter()
 
+class QuestionRequest(BaseModel):
+    question: str
+
 @router.post("/ask")
-def ask_question(question: str = Form(...), lang: str = Form(...)):
-    q_en = translate_text(question, "en")
-    a_en = search_answer(q_en)
-    return {"response": translate_text(a_en, lang)}
+async def ask_question(req: QuestionRequest):
+    try:
+        answer = search_answer(req.question)
+        return {"answer": answer}
+    except Exception as e:
+        return {"error": str(e)}
 
