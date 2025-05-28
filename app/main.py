@@ -27,8 +27,7 @@ def head_root():
 # ✅ Load model + data on server startup
 @app.on_event("startup")
 def on_startup():
-    rag.load_qa_data()
-    rag.load_model_and_index()
+    print("✅ Server started. Model will load lazily.")
 
 # ✅ Parent Q&A endpoint (used internally)
 @app.post("/ask_question")
