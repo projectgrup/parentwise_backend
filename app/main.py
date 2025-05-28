@@ -24,11 +24,6 @@ def read_root():
 def head_root():
     return PlainTextResponse("OK")
 
-# Load model + data on server startup
-@app.on_event("startup")
-def on_startup():
-    rag.load_qa_data()
-    rag.load_model_and_index()
 
 # Parent Q&A endpoint (used internally)
 @app.post("/ask_question")
