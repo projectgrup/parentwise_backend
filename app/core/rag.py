@@ -37,7 +37,7 @@ def search_answer(query, top_k=1):
     if not qa_pairs:
         load_qa_data()
     if model is None or index is None:
-        load_model_and_index()  # Lazy load
+        load_model_and_index()
 
     qvec = model.encode([query], convert_to_numpy=True)
     qvec = qvec / np.linalg.norm(qvec)
