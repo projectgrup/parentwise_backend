@@ -3,42 +3,51 @@ import numpy as np
 import json
 from sentence_transformers import SentenceTransformer
 
-# Globals
-model = SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L6-v2')
+# Global variables
+model = None
 index = None
 qa_pairs = []
 
 def load_qa_data():
+    """Load Q&A pairs from JSON file if not already loaded."""
     global qa_pairs
     if qa_pairs:
         return
     try:
-        with open("app/data.json", "r", encoding="utf-8") as f:
+        with open("app/data.json", "r") as f:
             data = json.load(f)
             for topic in data.get("toddler_care", {}):
                 qa_pairs.extend(data["toddler_care"][topic])
         print(f"✅ Loaded {len(qa_pairs)} Q&A pairs.")
     except Exception as e:
-        print("❌ Q&A Load Error:", e)
+        print(f"❌ Failed to load Q&A data: {e}")
 
-def build_index():
-    global index
-    if index is not None:
-        return
-    questions = [pair["question"] for pair in qa_pairs]
-    vectors = model.encode(questions, convert_to_numpy=True)
-    vectors = vectors / np.linalg.norm(vectors, axis=1, keepdims=True)
-    index = faiss.IndexFlatIP(vectors.shape[1])
-    index.add(vectors)
-    print(f"✅ Built FAISS index with {len(questions)} entries.")
+def load_model_and_index():
+    """Load embedding model and build FAISS index over question embeddings."""
+    global model, index
+    if model is None:
+        model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
+    if index is None:
+        questions = [pair["question"] for pair in qa_pairs]
+        vectors = model.encode(questions, convert_to_numpy=True, normalize_embeddings=True).astype(np.float32)
+        # FAISS inner product index requires float32
+        index = faiss.IndexFlatIP(vectors.shape[1])
+        index.add(vectors)
 
 def search_answer(query, top_k=1):
-    if not qa_pairs:
-        load_qa_data()
-    if index is None:
-        build_index()
+    """
+    Given a query string, return the most relevant answer from the loaded Q&A pairs.
+    Args:
+        query (str): The input question/query.
+        top_k (int): Number of top results to retrieve (default 1).
+    Returns:
+        str: The best matching answer.
+    """
+    load_qa_data()
+    load_model_and_index()
 
-    query_vec = model.encode([query], convert_to_numpy=True)
-    query_vec = query_vec / np.linalg.norm(query_vec)
-    _, idx = index.search(query_vec, top_k)
-    return qa_pairs[idx[0][0]]["answer"]
+    qvec = model.encode([query], convert_to_numpy=True, normalize_embeddings=True).astype(np.float32)
+    _, idx = index.search(qvec, top_k)
+
+    result = [qa_pairs[i]["answer"] for i in idx[0] if i < len(qa_pairs)]
+    return result[0] if result else "Sorry, no relevant answer found."
