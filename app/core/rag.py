@@ -33,8 +33,11 @@ def load_model_and_index():
         index.add(vectors)
 
 def search_answer(query, top_k=1):
-    load_qa_data()
-    load_model_and_index()
+    global model, index
+    if not qa_pairs:
+        load_qa_data()
+    if model is None or index is None:
+        load_model_and_index()  # Lazy load
 
     qvec = model.encode([query], convert_to_numpy=True)
     qvec = qvec / np.linalg.norm(qvec)
@@ -42,3 +45,4 @@ def search_answer(query, top_k=1):
 
     result = [qa_pairs[i]["answer"] for i in idx[0]]
     return result[0]
+
