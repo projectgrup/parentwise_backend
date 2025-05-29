@@ -1,13 +1,12 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
-from random import choice
+from app.core import rag
 import json
-from app.core import rag  # Your custom RAG module
+from random import choice
 
 app = FastAPI()
 
-# Enable CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -24,7 +23,6 @@ def read_root():
 def head_root():
     return PlainTextResponse("OK")
 
-# 🔁 Q&A endpoint
 @app.post("/ask_question")
 async def ask_question(req: Request):
     try:
@@ -38,12 +36,10 @@ async def ask_question(req: Request):
         print("Q&A error:", e)
         return {"answer": "Something went wrong. Try again."}
 
-# 🔁 Alias for Streamlit
 @app.post("/ask")
 async def ask_alias(req: Request):
     return await ask_question(req)
 
-# 🍼 Toddler Schedule Generator
 @app.post("/generate_schedule")
 async def generate_schedule(req: Request):
     body = await req.json()
@@ -51,7 +47,6 @@ async def generate_schedule(req: Request):
     wake = body.get("wake_time", "7:00 AM")
     nap = body.get("nap_pref", "1 nap")
     meals = body.get("meals", 3)
-
     parts = [
         f"Wake up at {wake}, then breakfast.",
         "Morning activity or learning.",
@@ -65,13 +60,11 @@ async def generate_schedule(req: Request):
     routine = "\n".join([line for line in parts if line])
     return {"routine": routine}
 
-# 📖 Story Generator
 @app.post("/story/generate")
 async def generate_story(req: Request):
     body = await req.json()
     age = body.get("age", 3)
     theme = body.get("theme", "friendship").lower()
-
     stories = {
         "jungle": [
             f"A curious {age}-year-old monkey explored the jungle and made amazing friends.",
@@ -92,7 +85,6 @@ async def generate_story(req: Request):
     }
     return {"story": choice(stories.get(theme, stories["default"]))}
 
-# 📝 Feedback Logger
 @app.post("/submit_feedback")
 async def submit_feedback(req: Request):
     body = await req.json()
@@ -105,7 +97,6 @@ async def submit_feedback(req: Request):
         print("Feedback error:", e)
         return {"status": "error", "message": "Failed to log feedback."}
 
-# 🔒 Firebase Token Verifier (demo only)
 @app.post("/auth/verify")
 async def verify_token(req: Request):
     token = (await req.json()).get("token", "")
