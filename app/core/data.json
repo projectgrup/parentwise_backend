@@ -9,415 +9,65 @@
           "question": "How to stop a toddler from hitting?",
           "answer": "Teach them gentle hands and redirect their behavior calmly."
         },
-        {
-          "question": "How to teach a toddler patience?",
-          "answer": "Practice waiting with small activities and use a timer for guidance."
-        },
-        {
-          "question": "How to encourage sharing in toddlers?",
-          "answer": "Use playtime to model and praise sharing behavior."
-        },
-        {
-          "question": "How to reduce toddler aggression?",
-          "answer": "Identify triggers, teach emotional regulation, and reinforce positive behavior."
-        },
-        {
-          "question": "How to manage toddler defiance?",
-          "answer": "Offer choices, set clear expectations, and stay consistent."
-        },
-        {
-          "question": "How to handle toddler fears and anxieties?",
-          "answer": "Validate their feelings and gradually expose them to fears in a safe way."
-        },
-        {
-          "question": "How to stop toddler biting?",
-          "answer": "Firmly say 'No biting,' and redirect to teething toys or calm down techniques."
-        },
-        {
-          "question": "How to prevent sibling rivalry?",
-          "answer": "Encourage teamwork and give equal attention to both children."
-        },
-        {
-          "question": "How to set boundaries for a strong-willed toddler?",
-          "answer": "Use clear, firm, and consistent rules with positive reinforcement."
-        }
       ],
       "sleep_and_routines": [
         {
           "question": "How to improve toddler sleep patterns?",
           "answer": "Set a consistent bedtime routine and avoid screen time before bed."
-        },
-        {
-          "question": "How to transition a toddler from crib to bed?",
-          "answer": "Introduce a toddler bed with comfort items and keep a consistent bedtime routine."
-        },
-        {
-          "question": "How to handle toddler night waking?",
-          "answer": "Reassure them calmly and avoid creating new sleep associations."
-        },
-        {
-          "question": "How much sleep does a toddler need?",
-          "answer": "Toddlers need 11-14 hours of sleep, including naps."
-        },
-        {
-          "question": "How to stop a toddler from fighting bedtime?",
-          "answer": "Create a predictable bedtime routine and limit stimulating activities before bed."
-        },
-        {
-          "question": "How to handle toddler nightmares?",
-          "answer": "Comfort them, talk about their fears, and use a nightlight if needed."
-        },
-        {
-          "question": "How to get a toddler to nap?",
-          "answer": "Create a calm nap environment and establish a predictable nap schedule."
-        },
-        {
-          "question": "How to stop early morning wake-ups?",
-          "answer": "Adjust bedtime, keep the room dark, and ensure they're well-rested."
-        },
-        {
-          "question": "How to transition from two naps to one?",
-          "answer": "Gradually shift the morning nap later until it merges with the afternoon nap."
-        },
-        {
-          "question": "How to deal with bedtime separation anxiety?",
-          "answer": "Reassure them with a bedtime routine and a comfort item like a stuffed animal."
         }
       ],
       "nutrition_and_feeding": [
         {
           "question": "What are some healthy toddler snacks?",
           "answer": "Fruits, yogurt, cheese sticks, and whole-grain crackers."
-        },
-        {
-          "question": "How to get a picky eater to try new foods?",
-          "answer": "Offer a variety of foods and avoid pressuring them to eat."
-        },
-        {
-          "question": "How to encourage self-feeding?",
-          "answer": "Provide toddler-friendly utensils and allow them to explore their food."
-        },
-        {
-          "question": "How much milk should a toddler drink?",
-          "answer": "16-24 ounces of whole milk per day."
-        },
-        {
-          "question": "How to handle a toddler who refuses to eat?",
-          "answer": "Stay calm, offer healthy choices, and avoid force-feeding."
-        },
-        {
-          "question": "What foods should toddlers avoid?",
-          "answer": "Choking hazards like whole grapes, nuts, and honey (under 1 year old)."
-        },
-        {
-          "question": "How to make mealtime fun for toddlers?",
-          "answer": "Use colorful plates, fun shapes, and let them help prepare food."
-        },
-        {
-          "question": "How to deal with food allergies in toddlers?",
-          "answer": "Introduce allergens slowly and monitor for reactions."
-        },
-        {
-          "question": "How to prevent toddler choking?",
-          "answer": "Cut food into small pieces and supervise eating closely."
-        },
-        {
-          "question": "How to encourage drinking water?",
-          "answer": "Offer water frequently and use fun cups or straws."
         }
       ],
       "health_and_safety": [
         {
           "question": "How to treat a toddler’s fever?",
           "answer": "Give fluids, dress lightly, and use fever reducers if necessary."
-        },
-        {
-          "question": "How to protect toddlers from colds?",
-          "answer": "Encourage handwashing and limit exposure to sick people."
-        },
-        {
-          "question": "How to handle toddler constipation?",
-          "answer": "Increase fiber intake and ensure they drink enough fluids."
-        },
-        {
-          "question": "How to treat a toddler’s minor cuts and bruises?",
-          "answer": "Clean with water, apply antiseptic, and use a bandage if needed."
-        },
-        {
-          "question": "How to prevent toddler ear infections?",
-          "answer": "Avoid secondhand smoke, encourage good hygiene, and breastfeed if possible."
         }
       ],
       "development_and_learning": [
         {
           "question": "How to encourage toddler speech development?",
           "answer": "Talk to them often, read books, and sing songs together."
-        },
-        {
-          "question": "How to teach toddlers colors and numbers?",
-          "answer": "Use everyday objects and interactive play."
-        },
-        {
-          "question": "How to support toddler social skills?",
-          "answer": "Arrange playdates and model friendly interactions."
-        },
-        {
-          "question": "How to help a toddler with separation anxiety?",
-          "answer": "Create a goodbye routine and reassure them that you’ll return."
-        },
-        {
-          "question": "How to foster a love for books in toddlers?",
-          "answer": "Read daily and let them choose books they enjoy."
         }
       ],
       "potty_training_and_hygiene": [
         {
           "question": "How to start potty training a toddler?",
           "answer": "Begin when they show readiness and use positive reinforcement."
-        },
-        {
-          "question": "How to encourage handwashing?",
-          "answer": "Make it fun with songs and colorful soaps."
-        },
-        {
-          "question": "How to prevent toddler diaper rashes?",
-          "answer": "Change diapers frequently and use barrier creams."
-        },
-        {
-          "question": "How to teach toddlers to brush their teeth?",
-          "answer": "Use a soft toothbrush and a fun-flavored toothpaste."
-        },
-        {
-          "question": "How to manage nighttime potty training?",
-          "answer": "Limit fluids before bed and use protective bedding."
-        }
-      ],
-      "emotional_development_and_mental_health": [
-        {
-          "question": "How to help a toddler express emotions?",
-          "answer": "Teach emotion words, use books about feelings, and validate their emotions."
-        },
-        {
-          "question": "How to comfort a toddler during a meltdown?",
-          "answer": "Stay calm, offer a hug, and help them name their feelings."
-        },
-        {
-          "question": "How to help a toddler overcome fear of strangers?",
-          "answer": "Give them time to warm up and don’t force interactions."
-        },
-        {
-          "question": "How to encourage a toddler’s confidence?",
-          "answer": "Praise effort, let them make choices, and avoid overcorrecting small mistakes."
-        },
-        {
-          "question": "How to teach toddlers about empathy?",
-          "answer": "Model kind behavior and discuss how others feel in different situations."
-        },
-        {
-          "question": "How to help a toddler with frustration?",
-          "answer": "Encourage deep breaths, provide comfort, and offer problem-solving tools."
-        },
-        {
-          "question": "How to deal with toddler jealousy?",
-          "answer": "Give them one-on-one attention and reinforce positive behavior."
-        },
-        {
-          "question": "How to manage a toddler’s fear of the dark?",
-          "answer": "Use a nightlight and talk about what they are afraid of calmly."
-        },
-        {
-          "question": "How to teach toddlers about personal space?",
-          "answer": "Use gentle reminders and model appropriate boundaries."
-        },
-        {
-          "question": "How to help a toddler adjust to a new sibling?",
-          "answer": "Involve them in baby care and reassure them of their importance in the family."
         }
       ],
       "play_and_activities": [
         {
           "question": "What are the best educational toys for toddlers?",
           "answer": "Blocks, puzzles, books, and pretend play sets like a toy kitchen."
-        },
-        {
-          "question": "How to encourage creative play in toddlers?",
-          "answer": "Provide open-ended toys like building blocks and art supplies."
-        },
-        {
-          "question": "How to keep a toddler entertained indoors?",
-          "answer": "Try sensory bins, dance parties, or simple crafts."
-        },
-        {
-          "question": "What are some fun outdoor activities for toddlers?",
-          "answer": "Playing at the park, blowing bubbles, and sidewalk chalk art."
-        },
-        {
-          "question": "How to reduce screen time for toddlers?",
-          "answer": "Offer engaging alternatives like storytelling, puzzles, and active play."
-        },
-        {
-          "question": "How to encourage independent play?",
-          "answer": "Set up a safe play space with interesting toys and step back gradually."
-        },
-        {
-          "question": "How much physical activity does a toddler need?",
-          "answer": "At least 3 hours of active play per day."
-        },
-        {
-          "question": "How to encourage problem-solving skills in toddlers?",
-          "answer": "Let them figure out small challenges on their own before helping."
-        },
-        {
-          "question": "How to introduce a toddler to music?",
-          "answer": "Sing songs, provide simple instruments, and play different types of music."
-        },
-        {
-          "question": "How to teach a toddler to clean up after playtime?",
-          "answer": "Make it fun with a cleanup song and give clear instructions."
         }
       ],
       "parenting_strategies_and_challenges": [
         {
           "question": "How to deal with parental burnout?",
           "answer": "Take breaks, ask for help, and prioritize self-care."
-        },
-        {
-          "question": "How to balance work and parenting?",
-          "answer": "Set boundaries, create a schedule, and maximize quality time."
-        },
-        {
-          "question": "How to handle disagreements about parenting with a partner?",
-          "answer": "Communicate openly and find common ground in parenting approaches."
-        },
-        {
-          "question": "How to teach toddlers responsibility?",
-          "answer": "Give them small tasks like putting away toys or helping with meals."
-        },
-        {
-          "question": "How to prepare a toddler for a new routine?",
-          "answer": "Talk about the changes in advance and practice the new routine together."
-        },
-        {
-          "question": "How to teach a toddler gratitude?",
-          "answer": "Model thankfulness and encourage them to say 'thank you.'"
-        },
-        {
-          "question": "How to help a toddler adjust to daycare?",
-          "answer": "Visit beforehand, establish a goodbye routine, and reassure them."
-        },
-        {
-          "question": "How to avoid power struggles with toddlers?",
-          "answer": "Offer choices and let them feel in control in small ways."
-        },
-        {
-          "question": "How to encourage good manners in toddlers?",
-          "answer": "Model polite behavior and use gentle reminders."
-        },
-        {
-          "question": "How to help a toddler build self-control?",
-          "answer": "Use simple rules, reinforce patience, and practice waiting games."
         }
       ],
       "social_skills_and_interaction": [
         {
           "question": "How to teach toddlers to take turns?",
           "answer": "Practice sharing with games and praise turn-taking behavior."
-        },
-        {
-          "question": "How to help a shy toddler socialize?",
-          "answer": "Encourage small group play and let them observe before engaging."
-        },
-        {
-          "question": "How to handle a toddler who interrupts?",
-          "answer": "Teach them to wait by using hand signals or a turn-taking system."
-        },
-        {
-          "question": "How to encourage kindness in toddlers?",
-          "answer": "Praise kind actions and read stories about kindness."
-        },
-        {
-          "question": "How to help a toddler make friends?",
-          "answer": "Arrange playdates and model friendly greetings and conversations."
-        },
-        {
-          "question": "How to stop a toddler from grabbing toys from others?",
-          "answer": "Teach them to ask nicely and redirect with positive reinforcement."
-        },
-        {
-          "question": "How to prepare a toddler for preschool?",
-          "answer": "Practice basic skills like following directions and social interactions."
-        },
-        {
-          "question": "How to teach toddlers about sharing?",
-          "answer": "Use role-playing and praise sharing moments."
-        },
-        {
-          "question": "How to handle toddler playdate conflicts?",
-          "answer": "Step in calmly, guide problem-solving, and encourage fair play."
-        },
-        {
-          "question": "How to encourage teamwork in toddlers?",
-          "answer": "Use group activities and praise cooperation."
         }
       ],
       "safety_and_health": [
         {
           "question": "How to childproof a home for toddlers?",
           "answer": "Use safety gates, cover outlets, and secure furniture."
-        },
-        {
-          "question": "How to handle toddler falls and minor injuries?",
-          "answer": "Stay calm, assess for injuries, and comfort them."
-        },
-        {
-          "question": "How to prevent drowning accidents in toddlers?",
-          "answer": "Never leave them unattended near water and teach water safety early."
-        },
-        {
-          "question": "How to safely introduce pets to toddlers?",
-          "answer": "Supervise interactions and teach gentle pet handling."
-        },
-        {
-          "question": "How to prevent toddler poisoning?",
-          "answer": "Keep household chemicals and medicines out of reach."
-        },
-        {
-          "question": "How to treat toddler sunburn?",
-          "answer": "Apply cool compresses, moisturizers, and keep them hydrated."
-        },
-        {
-          "question": "How to recognize and handle food allergies in toddlers?",
-          "answer": "Watch for reactions like hives or swelling and seek medical advice if needed."
-        },
-        {
-          "question": "How to handle a toddler’s nosebleed?",
-          "answer": "Have them lean forward and gently pinch the nostrils for a few minutes."
-        },
-        {
-          "question": "How to prevent toddler dehydration?",
-          "answer": "Offer water regularly and watch for signs of thirst."
-        },
-        {
-          "question": "How to keep toddlers safe in the car?",
-          "answer": "Use an age-appropriate car seat and secure it properly."
         }
       ],
       "miscellaneous": [
         {
           "question": "How to prepare a toddler for travel?",
           "answer": "Bring comfort items, snacks, and engaging activities."
-        },
-        {
-          "question": "How to handle a toddler’s first haircut?",
-          "answer": "Prepare them in advance and use distractions during the cut."
-        },
-        {
-          "question": "How to deal with a toddler who refuses to wear clothes?",
-          "answer": "Offer choices and make getting dressed into a fun game."
-        },
-        {
-          "question": "How to stop a toddler from throwing things?",
-          "answer": "Redirect to appropriate throwing activities like soft toys or balls."
         },
         {
           "question": "How to raise a happy toddler?",
