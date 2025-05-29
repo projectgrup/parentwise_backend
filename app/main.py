@@ -3,11 +3,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 from random import choice
 import json
-from app.core import rag  # Import custom RAG module
+from app.core import rag  # Your custom RAG module
 
 app = FastAPI()
 
-# Enable CORS for frontend communication
+# Enable CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -18,35 +18,32 @@ app.add_middleware(
 
 @app.get("/")
 def read_root():
-    return {"message": "✅ ParentWise backend is running."}
+    return {"message": "ParentWise backend is running."}
 
 @app.head("/")
 def head_root():
     return PlainTextResponse("OK")
 
-
-# Parent Q&A endpoint (used internally)
+# 🔁 Q&A endpoint
 @app.post("/ask_question")
 async def ask_question(req: Request):
     try:
         body = await req.json()
         q = body.get("question", "").strip()
-
         if not q:
             return {"answer": "Please enter a question."}
-
         answer = rag.search_answer(q)
         return {"answer": answer}
     except Exception as e:
-        print("❌ Q&A error:", e)
+        print("Q&A error:", e)
         return {"answer": "Something went wrong. Try again."}
 
-# FIX for frontend — route alias for Streamlit /ask
+# 🔁 Alias for Streamlit
 @app.post("/ask")
 async def ask_alias(req: Request):
     return await ask_question(req)
 
-# Toddler Schedule Generator
+# 🍼 Toddler Schedule Generator
 @app.post("/generate_schedule")
 async def generate_schedule(req: Request):
     body = await req.json()
@@ -65,11 +62,10 @@ async def generate_schedule(req: Request):
         "Dinner and quiet time.",
         "Bedtime around 8 PM."
     ]
-
     routine = "\n".join([line for line in parts if line])
     return {"routine": routine}
 
-# Story Generator
+# 📖 Story Generator
 @app.post("/story/generate")
 async def generate_story(req: Request):
     body = await req.json()
@@ -94,10 +90,9 @@ async def generate_story(req: Request):
             f"A friendly star whispered a bedtime tale to a sleepy {age}-year-old child."
         ]
     }
-
     return {"story": choice(stories.get(theme, stories["default"]))}
 
-# Feedback Logger
+# 📝 Feedback Logger
 @app.post("/submit_feedback")
 async def submit_feedback(req: Request):
     body = await req.json()
@@ -107,10 +102,10 @@ async def submit_feedback(req: Request):
             f.write("\n")
         return {"status": "success"}
     except Exception as e:
-        print("❌ Feedback error:", e)
+        print("Feedback error:", e)
         return {"status": "error", "message": "Failed to log feedback."}
 
-# Firebase Token Verification (Demo only)
+# 🔒 Firebase Token Verifier (demo only)
 @app.post("/auth/verify")
 async def verify_token(req: Request):
     token = (await req.json()).get("token", "")
